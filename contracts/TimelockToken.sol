@@ -1,39 +1,29 @@
-pragma solidity ^0.5.8;
-import  "@gnosis.pm/util-contracts/contracts/Token.sol";
+pragma solidity ^0.8.3;
+import "@openzeppelin/contracts@4.3.2/token/ERC20/ERC20.sol";
 
+/**
+@title TimelockToken contract - allows a token unlock over time
+Based on 
+https://github.com/gnosis/disbursement-contracts/blob/master/contracts/Disbursement.sol
+ +
+https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/ERC20.sol
+**/
 
-/// @title Disbursement contract - allows to distribute tokens over time
-/// @author Stefan George - <stefan@gnosis.pm>
-contract Disbursement {
+contract TimeLockToken is ERC20 {
 
     /*
      *  Storage
      */
-    address public receiver;
-    address public wallet;
+    
     uint public disbursementPeriod;
     uint public startDate;
     uint public withdrawnTokens;
-    Token public token;
-
-    /*
-     *  Modifiers
-     */
-    modifier isReceiver() {
-        if (msg.sender != receiver)
-            revert("Only receiver is allowed to proceed");
-        _;
-    }
-
-    modifier isWallet() {
-        if (msg.sender != wallet)
-            revert("Only wallet is allowed to proceed");
-        _;
-    }
 
     /*
      *  Public functions
      */
+
+     //TURN THIS INTO locking function
     /// @dev Constructor function sets the wallet address, which is allowed to withdraw all tokens anytime
     /// @param _receiver Receiver of vested tokens
     /// @param _wallet Gnosis multisig wallet address
@@ -55,6 +45,7 @@ contract Disbursement {
         }
     }
 
+//TURN THIS INTO PRE-TRANSFER HOOK
     /// @dev Transfers tokens to a given address
     /// @param _to Address of token receiver
     /// @param _value Number of tokens to transfer
@@ -70,16 +61,8 @@ contract Disbursement {
         token.transfer(_to, _value);
     }
 
-    /// @dev Transfers all tokens to multisig wallet
-    function walletWithdraw()
-        public
-        isWallet
-    {
-        uint balance = token.balanceOf(address(this));
-        withdrawnTokens += balance;
-        token.transfer(wallet, balance);
-    }
-
+   
+//CALCULATE THE NUMBER OF TRANSFERRABLE TOKENS
     /// @dev Calculates the maximum amount of vested tokens
     /// @return Number of vested tokens to withdraw
     function calcMaxWithdraw()
